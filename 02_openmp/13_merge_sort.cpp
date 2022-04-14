@@ -23,10 +23,16 @@ void merge(std::vector<int>& vec, int begin, int mid, int end) {
 void merge_sort(std::vector<int>& vec, int begin, int end) {
   if(begin < end) {
     int mid = (begin + end) / 2;
+    #pragma omp parallel sections
+{
+    #pragma omp section
     merge_sort(vec, begin, mid);
+    #pragma omp section
     merge_sort(vec, mid+1, end);
+} //  #pragma omp taskwait
     merge(vec, begin, mid, end);
-  }
+ 
+ }
 }
 
 int main() {

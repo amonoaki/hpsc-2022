@@ -1,10 +1,11 @@
 #include <cstdio>
 #include <cstdlib>
 #include <vector>
-
+#include<time.h>
 int main() {
   int n = 50;
-  int range = 5;
+  int range = 10; 
+  srand(int(time(NULL)));
   std::vector<int> key(n);
   for (int i=0; i<n; i++) {
     key[i] = rand() % range;
@@ -18,6 +19,7 @@ int main() {
   std::vector<int> offset(range,0);
   for (int i=1; i<range; i++) 
     offset[i] = offset[i-1] + bucket[i-1];
+ #pragma omp parallel for private(i) shared(offset,bucket)
   for (int i=0; i<range; i++) {
     int j = offset[i];
     for (; bucket[i]>0; bucket[i]--) {
