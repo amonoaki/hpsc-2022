@@ -17,9 +17,9 @@ int main (int argc, char** argv) {
   hsize_t N[2] = {NX, NY};
   hsize_t Nlocal[2] = {5000, 5000};
   hsize_t block[2] = {2500,2500};
-  hsize_t offset[2] = {mpirank / dim[0]*2500, mpirank % dim[0]*2500};
+  hsize_t offset[2] = {mpirank / dim[0], mpirank % dim[0]};
   cout<<mpirank<<":"<<offset[0]<<" "<<offset[1]<<endl;
-  for(int i=0; i<2; i++) offset[i] *= Nlocal[i];
+  for(int i=0; i<2; i++) offset[i] *= Nlocal[i]/2;
   hsize_t count[2] = {2,2};
   hsize_t stride[2] = {5000,5000};
   vector<int> buffer(Nlocal[0]*Nlocal[1],mpirank);
@@ -27,7 +27,7 @@ int main (int argc, char** argv) {
   H5Pset_fapl_mpio(plist, MPI_COMM_WORLD, MPI_INFO_NULL);
   hid_t file = H5Fcreate("data.h5", H5F_ACC_TRUNC, H5P_DEFAULT, plist);
   hid_t globalspace = H5Screate_simple(2, N, NULL);
-  hid_t localspace = H5Screate_simple(1, Nlocal, NULL);
+  hid_t localspace = H5Screate_simple(2, Nlocal, NULL);
   hid_t dataset = H5Dcreate(file, "dataset", H5T_NATIVE_INT, globalspace,
 			    H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
   H5Sselect_hyperslab(globalspace, H5S_SELECT_SET, offset, stride, count, block);
