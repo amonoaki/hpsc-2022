@@ -3,7 +3,7 @@
 #include <vector>
 #include <chrono>
 #include <math.h>
-
+#include<iostream>
 using namespace std;
 typedef vector<vector<double> > matrix;
 
@@ -135,7 +135,7 @@ double sum(const matrix& m)
 
 int main()
 {
-	//cout << "start" << endl;
+	cout << "OPENMP" << endl;
 	double udiff = 1.0;
 	int	stepcount = 0;
 	matrix u = zeros(ny, nx);
@@ -329,7 +329,7 @@ int main()
 			v[0][i] = 0;
 			v[ny - 1][i] = 0;
 		}
-		//cout << "4" << endl;
+		printf("udiff = %lf\n",udiff);
 		udiff = (sum(u) - sum(un)) / sum(u);
 		stepcount++;
 	}
