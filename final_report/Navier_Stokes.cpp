@@ -199,9 +199,7 @@ int main()
 						(un[j][0] - 2 * un[j][nx - 1] + un[j][nx - 2]) +
 						dt / pow(dy, 2) *
 						(un[j + 1][nx - 1] - 2 * un[j][nx - 1] + un[j - 1][nx - 1])) + F * dt);
-		}
-		for (int j = 1; j < ny - 1; j++)
-		{
+		
 			// Periodic BC u @ x = 0
 			u[j][0] = (un[j][0] - un[j][0] * dt / dx *
 					(un[j][0] - un[j][nx - 1]) -
@@ -213,9 +211,7 @@ int main()
 						(un[j][1] - 2 * un[j][0] + un[j][nx - 1]) +
 						dt / pow(dy, 2) *
 						(un[j + 1][0] - 2 * un[j][0] + un[j - 1][0])) + F * dt);
-		}
-		for (int j = 1; j < ny - 1; j++)
-		{
+		
 			// Periodic BC v @ x = 2
 			v[j][nx - 1] = (vn[j][nx - 1] - un[j][nx - 1] * dt / dx *
 					(vn[j][nx - 1] - vn[j][nx - 2]) -
@@ -227,9 +223,7 @@ int main()
 						(vn[j][0] - 2 * vn[j][nx - 1] + vn[j][nx - 2]) +
 						dt / pow(dy, 2) *
 						(vn[j + 1][nx - 1] - 2 * vn[j][nx - 1] + vn[j - 1][nx - 1])));
-		}
-		for (int j = 1; j < ny - 1; j++)
-		{
+		
 			// Periodic BC v @ x = 0
 			v[j][0] = (vn[j][0] - un[j][0] * dt / dx *
 					(vn[j][0] - vn[j][nx - 1]) -
@@ -243,19 +237,6 @@ int main()
 						(vn[j + 1][0] - 2 * vn[j][0] + vn[j - 1][0])));
 		}
 		//cout << "3" << endl;
-
-		/*
-
-
-
-# Wall BC : u, v = 0 @ y = 0, 2
-u[0, :] = 0
-u[-1, :] = 0
-v[0, :] = 0
-v[-1, :] = 0
-
-udiff = (numpy.sum(u) - numpy.sum(un)) / numpy.sum(u)
-stepcount += 1*/
 		for (int i = 0; i < nx ; i++)
 		{
 			u[0][i] = 0;
@@ -270,3 +251,4 @@ stepcount += 1*/
 	cout << "OVER"<< endl;
 	cout<<"StepCount = "<<stepcount<<endl;
 }
+
