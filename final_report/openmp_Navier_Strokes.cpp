@@ -149,14 +149,14 @@ int main()
 
 	matrix	b = zeros(ny, nx);
 	auto tic = chrono::steady_clock::now();
-	#pragma omp parallel
-	while (udiff>0.001)
+
+	while (udiff > 0.001)
 	{
 		//cout << "step:" << stepcount << endl;
 		un = u;
 		vn = v;
 		matrix b = zeros(ny, nx);
-#pragma omp for collapse(2)
+#pragma omp parallel for collapse(2)
 		for (int j = 1; j < ny - 1; j++) {
 			for (int i = 1; i < nx - 1; i++) {
 				b[j][i] = rho * (1.0 / dt * ((u[j][i + 1] - u[j][i - 1]) / (2.0 * dx) + (v[j + 1][i] - v[j - 1][i]) / (2.0 * dy))
@@ -165,17 +165,14 @@ int main()
 					- pow((v[j + 1][i] - v[j - 1][i]) / (2.0 * dy), 2));
 			}
 		}
-#pragma omp for
+#pragma omp parallel for
 		for (int j = 1; j < ny - 1; j++)
 		{
 			b[j][nx - 1] = rho * (1.0 / dt * ((u[j][0] - u[j][nx - 2]) / (2.0 * dx) + (v[j + 1][nx - 1] - v[j - 1][nx - 1]) / (2.0 * dy))
 				- pow((u[j][0] - u[j][nx - 2]) / (2.0 * dx), 2)
 				- 2.0 * ((u[j + 1][nx - 1] - u[j - 1][nx - 1]) / (2.0 * dy) * (v[j][0] - v[j][nx - 2]) / (2.0 * dx))
 				- pow((v[j + 1][nx - 1] - v[j - 1][nx - 1]) / (2.0 * dy), 2));
-		}
-#pragma omp for
-		for (int j = 1; j < ny - 1; j++)
-		{
+	
 			b[j][0] = rho * (1.0 / dt * ((u[j][1] - u[j][nx - 1]) / (2.0 * dx) + (v[j + 1][0] - v[j - 1][0]) / (2.0 * dy))
 				- pow((u[j][1] - u[j][nx - 1]) / (2.0 * dx), 2)
 				- 2.0 * ((u[j + 1][0] - u[j - 1][0]) / (2.0 * dy) * (v[j][1] - v[j][nx - 1]) / (2.0 * dx))
@@ -185,7 +182,7 @@ int main()
 		for (int q = 0; q < nit; q++)
 		{
 			matrix pn(p);
-#pragma omp for collapse(2)
+#pragma omp parallel for collapse(2)
 			for (int j = 1; j < ny - 1; j++) {
 				for (int i = 1; i < nx - 1; i++) {
 					p[j][i] = (((pn[j][i + 1] - pn[j][i - 1]) * pow(dy, 2) +
@@ -196,26 +193,21 @@ int main()
 				}
 			}
 			//Periodic BC Pressure @ x = 2
-#pragma omp for
+#pragma omp parallel for
 			for (int j = 1; j < ny - 1; j++)
 			{
 				p[j][nx - 1] = (((pn[j][0] - pn[j][nx - 2]) * pow(dy, 2) +
 					(pn[j + 1][nx - 1] - pn[j - 1][nx - 1]) * pow(dx, 2)) /
 					(2.0 * (pow(dx, 2) + pow(dy, 2))) -
 					pow(dx, 2) * pow(dy, 2) / (2.0 * (pow(dx, 2) + pow(dy, 2))) * b[j][nx - 1]);
-			}
-
-			//Periodic BC Pressure @ x = 0
-#pragma omp for
-			for (int j = 1; j < ny - 1; j++)
-			{
+			
 				p[j][0] = (((pn[j][1] - pn[j][nx - 1]) * pow(dy, 2) +
 					(pn[j + 1][0] - pn[j - 1][0]) * pow(dx, 2)) /
 					(2.0 * (pow(dx, 2) + pow(dy, 2))) -
 					pow(dx, 2) * pow(dy, 2) / (2.0 * (pow(dx, 2) + pow(dy, 2))) * b[j][0]);
 			}
 			//Wall boundary conditions, pressure
-#pragma omp for
+#pragma omp parallel for
 			for (int i = 0; i < nx; i++)
 			{
 				p[ny - 1][i] = p[ny - 2][i];
@@ -223,7 +215,7 @@ int main()
 			}
 		}
 		//cout << "create b and u" << endl;
-#pragma omp for collapse(2)
+#pragma omp parallel for collapse(2)
 		for (int j = 1; j < ny - 1; j++) {
 			for (int i = 1; i < nx - 1; i++) {
 				u[j][i] = (un[j][i] -
@@ -238,14 +230,7 @@ int main()
 						dt / pow(dy, 2) *
 						(un[j + 1][i] - 2 * un[j][i] + un[j - 1][i])) +
 					F * dt);
-			}
-		}
-		//cout << "1" << endl;
-#pragma omp for collapse(2)
-		for (int j = 1; j < ny - 1; j++)
-		{
-			for (int i = 1; i < nx - 1; i++)
-			{
+			
 				v[j][i] = (vn[j][i] -
 					un[j][i] * dt / dx *
 					(vn[j][i] - vn[j][i - 1]) -
@@ -261,7 +246,7 @@ int main()
 
 		}
 		//cout << "2" << endl;
-#pragma omp for
+#pragma omp parallel for
 		for (int j = 1; j < ny - 1; j++)
 		{
 			// Periodic BC u @ x = 2
@@ -275,10 +260,7 @@ int main()
 					(un[j][0] - 2 * un[j][nx - 1] + un[j][nx - 2]) +
 					dt / pow(dy, 2) *
 					(un[j + 1][nx - 1] - 2 * un[j][nx - 1] + un[j - 1][nx - 1])) + F * dt);
-		}
-#pragma omp for
-		for (int j = 1; j < ny - 1; j++)
-		{
+
 			// Periodic BC u @ x = 0
 			u[j][0] = (un[j][0] - un[j][0] * dt / dx *
 				(un[j][0] - un[j][nx - 1]) -
@@ -290,10 +272,7 @@ int main()
 					(un[j][1] - 2 * un[j][0] + un[j][nx - 1]) +
 					dt / pow(dy, 2) *
 					(un[j + 1][0] - 2 * un[j][0] + un[j - 1][0])) + F * dt);
-		}
-#pragma omp for
-		for (int j = 1; j < ny - 1; j++)
-		{
+
 			// Periodic BC v @ x = 2
 			v[j][nx - 1] = (vn[j][nx - 1] - un[j][nx - 1] * dt / dx *
 				(vn[j][nx - 1] - vn[j][nx - 2]) -
@@ -305,10 +284,7 @@ int main()
 					(vn[j][0] - 2 * vn[j][nx - 1] + vn[j][nx - 2]) +
 					dt / pow(dy, 2) *
 					(vn[j + 1][nx - 1] - 2 * vn[j][nx - 1] + vn[j - 1][nx - 1])));
-		}
-#pragma omp for
-		for (int j = 1; j < ny - 1; j++)
-		{
+
 			// Periodic BC v @ x = 0
 			v[j][0] = (vn[j][0] - un[j][0] * dt / dx *
 				(vn[j][0] - vn[j][nx - 1]) -
@@ -321,7 +297,7 @@ int main()
 					dt / pow(dy, 2) *
 					(vn[j + 1][0] - 2 * vn[j][0] + vn[j - 1][0])));
 		}
-#pragma omp for
+#pragma omp parallel for
 		for (int i = 0; i < nx; i++)
 		{
 			u[0][i] = 0;
@@ -329,13 +305,13 @@ int main()
 			v[0][i] = 0;
 			v[ny - 1][i] = 0;
 		}
-		printf("udiff = %lf\n",udiff);
+//		printf("udiff = %lf\n", udiff);
 		udiff = (sum(u) - sum(un)) / sum(u);
 		stepcount++;
 	}
 	auto toc = chrono::steady_clock::now();
 	double time = chrono::duration<double>(toc - tic).count();
-	printf("udiff = %lf\n",udiff);
+	printf("udiff = %lf\n", udiff);
 	printf("step = %d\n", stepcount);
 	printf("%1.3lf sec\n", time);
 }
